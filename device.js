@@ -1,8 +1,9 @@
 var EventEmitter = require('events').EventEmitter;
 var uuid = require('node-uuid');
-var ObjectStream = require('./object_stream');
-var BinaryStream = require('./binary_stream')
-var ConsumerStream = require('./consumer_stream');
+var streams = require('zetta-streams');
+var ObjectStream = streams.ObjectStream;
+var BinaryStream = streams.BinaryStream; 
+var ConsumerStream = streams.ConsumerStream;
 
 var Device = module.exports = function() {
   this.id = uuid.v4();
