@@ -1,0 +1,27 @@
+{
+  "name": "zetta-device",
+  "version": "0.1.0",
+  "description": "Device class for Zetta.",
+  "main": "device.js",
+  "dependencies": {
+    "node-uuid": "~1.4.1"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "./node_modules/mocha/bin/mocha -R spec ./test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/zettajs/zetta-device.git"
+  },
+  "keywords": [
+    "zetta",
+    "device"
+  ],
+  "author": "Kevin Swiber <kswiber@gmail.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/zettajs/zetta-device/issues"
+  },
+  "homepage": "https://github.com/zettajs/zetta-device"
+}
