@@ -15,6 +15,7 @@ var Device = module.exports = function() {
   this._transitions = {};
   this._monitors = [];
   this._pubsub = null;
+  this._log = null;
 
   var self = this;
   this.on = function(type, handler) {
@@ -101,7 +102,7 @@ Device.prototype.call = function(/* type, ...args */) {
       json.properties = self.properties();
       self._pubsub.publish(topic, json);
 
-      //self._log.emit('log', 'device', self.type + ' transition ' + type, json);
+      self._log.emit('log', 'device', self.type + ' transition ' + type, json);
     }
 
     next.apply(arguments);
