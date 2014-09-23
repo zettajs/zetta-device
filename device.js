@@ -5,7 +5,7 @@ var ObjectStream = streams.ObjectStream;
 var BinaryStream = streams.BinaryStream; 
 var ConsumerStream = streams.ConsumerStream;
 
-var Device = module.exports = function() {
+var Device = module.exports = function Device() {
   this.id = uuid.v4();
 
   this.streams = {}; // has __getter__ for consumer streams
