@@ -187,3 +187,16 @@ Device.prototype._createStream = function(name, StreamType) {
 
   return stream;
 };
+
+Device.prototype.transitionsAvailable = function() {
+  var self = this;
+  var allowed = this._allowed[this.state];
+  var ret = [];
+  Object.keys(this._transitions).forEach(function(name) {
+    if (allowed && allowed.indexOf(name) > -1) {
+      ret[name] = self._transitions[name];
+    }
+  });
+
+  return ret;
+};
