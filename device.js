@@ -100,8 +100,8 @@ Device.prototype.call = function(/* type, ...args */) {
       json.transition = type;
       json.input = args;
       json.properties = self.properties();
+      json.transitions = self.transitionsAvailable();
       self._pubsub.publish(topic, json);
-
       self._log.emit('log', 'device', self.type + ' transition ' + type, json);
     }
 
@@ -191,7 +191,7 @@ Device.prototype._createStream = function(name, StreamType) {
 Device.prototype.transitionsAvailable = function() {
   var self = this;
   var allowed = this._allowed[this.state];
-  var ret = [];
+  var ret = {};
   Object.keys(this._transitions).forEach(function(name) {
     if (allowed && allowed.indexOf(name) > -1) {
       ret[name] = self._transitions[name];
