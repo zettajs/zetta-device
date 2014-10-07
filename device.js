@@ -79,7 +79,12 @@ Device.prototype.call = function(/* type, ...args */) {
   }
   
   var self = this;
-  var cb = function callback() {
+  var cb = function callback(err) {
+    if (err) {
+      next(err);
+      return;
+    }
+
     var cbArgs = Array.prototype.slice.call(arguments);
     cbArgs.unshift(type);
     self._emitter.emit.apply(self._emitter, cbArgs);
