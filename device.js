@@ -81,31 +81,28 @@ Device.prototype.call = function(/* type, ...args */) {
   var self = this;
   var cb = function callback() {
     var cbArgs = Array.prototype.slice.call(arguments);
-    if (cbArgs.length && cbArgs[0] instanceof Error) {
-      self._emitter.emit('error', cbArgs[0]);
-    } else {
-      cbArgs.unshift(type);
-      self._emitter.emit.apply(self._emitter, cbArgs);
+    cbArgs.unshift(type);
+    self._emitter.emit.apply(self._emitter, cbArgs);
 
-      var args = [];
-      if (self._transitions[type].fields) {
-        self._transitions[type].fields.forEach(function(field, idx) {
-          args.push({ name: field.name, value: rest[idx] });
-        });
-      }
-
-      var topic = self.type + '/' + self.id + '/logs';
-      var json = ObjectStream.format(topic, null);
-      delete json.data;
-      json.transition = type;
-      json.input = args;
-      json.properties = self.properties();
-      json.transitions = self.transitionsAvailable();
-      self._pubsub.publish(topic, json);
-      self._log.emit('log', 'device', self.type + ' transition ' + type, json);
+    var args = [];
+    if (self._transitions[type].fields) {
+      self._transitions[type].fields.forEach(function(field, idx) {
+        args.push({ name: field.name, value: rest[idx] });
+      });
     }
 
-    next.apply(arguments);
+    var topic = self.type + '/' + self.id + '/logs';
+    var json = ObjectStream.format(topic, null);
+    delete json.data;
+    json.transition = type;
+    json.input = args;
+    json.properties = self.properties();
+    json.transitions = self.transitionsAvailable();
+
+    self._pubsub.publish(topic, json);
+    self._log.emit('log', 'device', self.type + ' transition ' + type, json);
+
+    next.apply(next, arguments);
   };
   var handlerArgs = rest.concat([cb]);
   if (this._transitions[type]) {
