@@ -61,6 +61,15 @@ Device.prototype._generate = function(config) {
   
 };
 
+Device.prototype.available = function(transition) {
+  var allowed = this._allowed[this.state];
+  if(allowed.indexOf(transition) > -1) {
+    return true;
+  } else {
+    return false;
+  }
+};
+
 Device.prototype.call = function(/* type, ...args */) {
   var args = Array.prototype.slice.call(arguments);
   var type = args[0];
@@ -114,7 +123,7 @@ Device.prototype.call = function(/* type, ...args */) {
     }
     var state = self.state;
     var allowed = this._allowed[state];
-    if (allowed.indexOf(type) > -1) {
+    if (self.available(type)) {
       this._transitions[type].handler.apply(this, handlerArgs);
     } else {
       next(new Error('Machine cannot use transition ' + type + ' while in ' + state));
