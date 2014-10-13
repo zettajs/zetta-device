@@ -78,12 +78,14 @@ Device.prototype.call = function(/* type, ...args */) {
   var args = Array.prototype.slice.call(arguments);
   var type = args[0];
   var next = args[args.length-1];
+  var self = this;
 
   var rest = null;
   if(typeof next !== 'function') {
     next = function(err){
       if (err) {
-        throw err;
+        self._log.emit('log', 'device',
+            'Error calling ' + self.type + ' transition ' + type + ' (' + err + ')');
       }
     };
     rest = args.slice(1, args.length);
@@ -91,7 +93,6 @@ Device.prototype.call = function(/* type, ...args */) {
     rest = args.slice(1, args.length - 1);
   }
   
-  var self = this;
   var cb = function callback(err) {
     if (err) {
       next(err);
