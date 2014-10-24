@@ -199,7 +199,7 @@ Device.prototype.createReadStream = function(name) {
   }
 
   var queue = this.type + '/' + this.id + '/' + name;
-  return new ConsumerStream(queue, { objectMode: stream._writableState.objectMode }, self._pubsub);
+  return new ConsumerStream(queue, { objectMode: stream._writableState.objectMode }, this._pubsub);
 };
 
 Device.prototype._createStream = function(name, StreamType) {
