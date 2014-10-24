@@ -189,6 +189,19 @@ Device.prototype._initStream = function(queueName, handler, options) {
   return this;
 };
 
+
+
+Device.prototype.createReadStream = function(name) {
+  var stream = this._streams[name];
+
+  if (!stream) {
+    throw new Error('Steam does not exist: ' + name);
+  }
+
+  var queue = this.type + '/' + this.id + '/' + name;
+  return new ConsumerStream(queue, { objectMode: stream._writableState.objectMode }, self._pubsub);
+};
+
 Device.prototype._createStream = function(name, StreamType) {
   var self = this;
   var queue = this.type + '/' + this.id + '/' + name;
@@ -197,7 +210,7 @@ Device.prototype._createStream = function(name, StreamType) {
 
   Object.defineProperty(this.streams, name, {
     get: function(){
-      return new ConsumerStream(queue, { objectMode: stream._writableState.objectMode }, self._pubsub);
+      return self.createReadStream(name);
     }
   });
 
