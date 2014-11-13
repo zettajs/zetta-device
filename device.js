@@ -67,6 +67,11 @@ Device.prototype._generate = function(config) {
 
 Device.prototype.available = function(transition) {
   var allowed = this._allowed[this.state];
+
+  if (!allowed) {
+    return false;
+  }
+  
   if(allowed.indexOf(transition) > -1) {
     return true;
   } else {
@@ -75,6 +80,7 @@ Device.prototype.available = function(transition) {
 };
 
 Device.prototype.call = function(/* type, ...args */) {
+
   var args = Array.prototype.slice.call(arguments);
   var type = args[0];
   var next = args[args.length-1];
@@ -129,12 +135,13 @@ Device.prototype.call = function(/* type, ...args */) {
       return next(new Error('Machine does not implement transition '+type));
     }
     var state = self.state;
-    var allowed = this._allowed[state];
     if (self.available(type)) {
       this._transitions[type].handler.apply(this, handlerArgs);
     } else {
       next(new Error('Machine cannot use transition ' + type + ' while in ' + state));
     }
+  } else {
+    next(new Error('Machine cannot use transition ' + type + ' not defined'));
   }
 };
 
@@ -221,6 +228,11 @@ Device.prototype.transitionsAvailable = function() {
   var self = this;
   var allowed = this._allowed[this.state];
   var ret = {};
+  
+  if (!allowed) {
+    return ret;
+  }
+
   Object.keys(this._transitions).forEach(function(name) {
     if (allowed && allowed.indexOf(name) > -1) {
       ret[name] = self._transitions[name];
