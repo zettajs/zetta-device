@@ -27,9 +27,11 @@ var Device = module.exports = function Device() {
   this.emit = this._emitter.emit.bind(this._emitter);
 };
 
-Device.prototype.log = function(message, data) {
-  this._log.emit('log', (this.name || this.type || 'device') + '-log', message, data);
-};
+['log', 'info', 'warn', 'error'].forEach(function(level) {
+  Device.prototype[level] = function(message, data) {
+    this._log.emit(level, (this.name || this.type || 'device') + '-log', message, data);
+  };
+});
 
 Device.prototype._generate = function(config) {
   var self = this;
