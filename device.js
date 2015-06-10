@@ -1,3 +1,4 @@
+var fs = require('fs');
 var EventEmitter = require('events').EventEmitter;
 var uuid = require('node-uuid');
 var streams = require('zetta-streams');
@@ -16,6 +17,7 @@ var Device = module.exports = function Device() {
   this._monitors = [];
   this._pubsub = null;
   this._log = null;
+  this._documentation = null;
 
   var self = this;
   this.on = function(type, handler) {
@@ -64,7 +66,39 @@ Device.prototype._generate = function(config) {
     var s = config.streams[name];
     self._initStream(name, s.handler, s.options);
   });
-  
+
+  if (config._docFilename) {
+    try {
+      var file = fs.readFileSync(config._docFilename);
+
+      if (/\.js$/.test(config._docFilename)) {
+        var re = /^\/\/\/(.*)/gm;
+
+        var pieces = [];
+        var match;
+        while ((match = re.exec(file)) !== null) {
+          if (match[1]) {
+            var line = match[1];
+            if (/\s/.test(line[0])) {
+              line = line.slice(1);
+            }
+
+            pieces.push(line);
+          } else {
+            if (match[0] === '///') {
+              pieces.push('');
+            }
+          }
+        }
+
+        self._documentation = pieces.join('\n');
+      } else {
+        self._documentation = file;
+      }
+    } catch(e) {
+      // ignore
+    }
+  }
 };
 
 Device.prototype.available = function(transition) {
