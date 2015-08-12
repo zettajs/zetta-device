@@ -27,11 +27,46 @@ var Device = module.exports = function Device() {
   this.emit = this._emitter.emit.bind(this._emitter);
 };
 
+var ReservedKeys = ['id', 'streams', '_streams', 'type', 'state', '_state', '_allowed', '_transitions', '_monitors'];
+
 ['log', 'info', 'warn', 'error'].forEach(function(level) {
   Device.prototype[level] = function(message, data) {
     this._log.emit(level, (this.name || this.type || 'device') + '-log', message, data);
   };
 });
+
+// Default Remote Update Hook
+// Filter _monitors and delete keys that are not in the input
+Device.prototype._remoteUpdate = function(input, cb) {
+  var self = this;
+  var monitors = this._monitors;
+  var inputKeys = Object.keys(input);
+
+  var acceptableKeyFilter = function(key) {
+    return monitors.indexOf(key) === -1;
+  };
+
+  inputKeys
+    .filter(acceptableKeyFilter)
+    .forEach(function(key) {
+      self[key] = input[key];
+    });
+
+  Object.keys(this._properties())
+    .filter(acceptableKeyFilter)
+    .forEach(function(key) {
+      if (ReservedKeys.indexOf(key) === -1 && inputKeys.indexOf(key) === -1) {
+        delete self[key];
+      }
+    });
+
+  this.save(cb);
+};
+
+// Default Remote Fetch Hook
+Device.prototype._remoteFetch = function() {
+  return this._properties();
+};
 
 Device.prototype._generate = function(config) {
   var self = this;
@@ -64,7 +99,16 @@ Device.prototype._generate = function(config) {
     var s = config.streams[name];
     self._initStream(name, s.handler, s.options);
   });
-  
+
+  // Update remote fetch handler
+  if (typeof config._remoteFetch === 'function') {
+    this._remoteFetch = config._remoteFetch.bind(this);
+  }
+
+  // Update remote update handler
+  if (typeof config._remoteUpdate === 'function') {
+    this._remoteUpdate = config._remoteUpdate.bind(this);
+  }
 };
 
 Device.prototype.available = function(transition) {
@@ -147,12 +191,13 @@ Device.prototype.call = function(/* type, ...args */) {
   }
 };
 
-Device.prototype.properties = function() {
+
+// Helper method to return normal properties on device that does not get overidden by user
+// setting a remoteFetch function.
+Device.prototype._properties = function() {
   var properties = {};
   var self = this;
-  
   var reserved = ['streams'];
-
   Object.keys(self).forEach(function(key) {
     if (reserved.indexOf(key) === -1 && typeof self[key] !== 'function' && key[0] !== '_') {
       properties[key] = self[key];
@@ -163,10 +208,64 @@ Device.prototype.properties = function() {
     properties[name] = self[name];
   });
 
-  properties.state = this.state;
+  return properties;
+};
+
+// External method to return properties using default remote fetch or 
+// user supplied remote fetch call
+Device.prototype.properties = function() {
+  var properties = this._remoteFetch();
+
+  // filter out underscored properties
+  Object.keys(properties).forEach(function(key) {
+    if (key[0] === '_') {
+      delete properties[key];
+    }
+  });
+
+  // overide id, name, type, and state
+  properties.id = this.id;
+  properties.type = this.type;
+  properties.name = this.name;
+
+  // State not always set
+  if (this.state !== undefined) {
+    properties.state = this.state;
+  }
   
   return properties;
 };
+
+// Called from zetta api resource to handle remote update
+// Provides filters that should run both on user defined update hook and default hook
+Device.prototype._handleRemoteUpdate = function(properties, cb) {
+  var self = this;
+
+  Object.keys(properties).forEach(function(key) {
+    // filter all methods and reserved keys and underscored
+    if (typeof self[key] === 'function' || ReservedKeys.indexOf(key) !== -1 || key[0] === '_') {
+      delete properties[key];
+    }
+  });
+
+  // Either default update hook or user supplied
+  this._remoteUpdate(properties, function(err) {
+    if (err) {
+      return cb(err);
+    }
+
+    var topic = self.type + '/' + self.id + '/logs';
+    var json = ObjectStream.format(topic, null);
+    delete json.data;
+    json.transition = 'zetta-properties-update';
+    json.input = [];
+    json.properties = self.properties();
+    json.transitions = self.transitionsAvailable();
+    self._pubsub.publish(topic, json);
+    cb();
+  });
+};
+
 
 Device.prototype.save = function(cb) {
   this._registry.save(this, cb);
