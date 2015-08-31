@@ -346,7 +346,5 @@ Device.prototype._sendLogStreamEvent = function(transition, args, cb) {
 
 Device.prototype.destroy = function() {
   var self = this;
-  this._sendLogStreamEvent('zetta-device-destroy', [], function() {    
-    self.emit('destroy', self);  
-  });
+  self.emit('destroy', self);
 };
