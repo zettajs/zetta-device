@@ -329,6 +329,7 @@ Device.prototype.transitionsAvailable = function() {
   return ret;
 };
 
+<<<<<<< HEAD
 Device.prototype._sendLogStreamEvent = function(transition, args, cb) {
   var self = this;
   var topic = self.type + '/' + self.id + '/logs';
@@ -347,4 +348,12 @@ Device.prototype._sendLogStreamEvent = function(transition, args, cb) {
 Device.prototype.destroy = function() {
   var self = this;
   self.emit('destroy', self);
+};
+
+Device.prototype.enableStream = function(name) {
+  this._streams[name].enabled = true; 
+};
+
+Device.prototype.disableStream = function(name) {
+  this._streams[name].enabled = false;
 };
