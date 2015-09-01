@@ -162,16 +162,9 @@ Device.prototype.call = function(/* type, ...args */) {
       });
     }
 
-    var topic = self.type + '/' + self.id + '/logs';
-    var json = ObjectStream.format(topic, null);
-    delete json.data;
-    json.transition = type;
-    json.input = args;
-    json.properties = self.properties();
-    json.transitions = self.transitionsAvailable();
-
-    self._pubsub.publish(topic, json);
-    self._log.emit('log', 'device', self.type + ' transition ' + type, json);
+    self._sendLogStreamEvent(type, args, function(json) {
+      self._log.emit('log', 'device', self.type + ' transition ' + type, json);
+    });
 
     next.apply(next, arguments);
   };
@@ -254,14 +247,7 @@ Device.prototype._handleRemoteUpdate = function(properties, cb) {
       return cb(err);
     }
 
-    var topic = self.type + '/' + self.id + '/logs';
-    var json = ObjectStream.format(topic, null);
-    delete json.data;
-    json.transition = 'zetta-properties-update';
-    json.input = [];
-    json.properties = self.properties();
-    json.transitions = self.transitionsAvailable();
-    self._pubsub.publish(topic, json);
+    self._sendLogStreamEvent('zetta-properties-update', []);
     cb();
   });
 };
@@ -341,6 +327,27 @@ Device.prototype.transitionsAvailable = function() {
   });
 
   return ret;
+};
+
+<<<<<<< HEAD
+Device.prototype._sendLogStreamEvent = function(transition, args, cb) {
+  var self = this;
+  var topic = self.type + '/' + self.id + '/logs';
+  var json = ObjectStream.format(topic, null);
+  delete json.data;
+  json.transition = transition;
+  json.input = args;
+  json.properties = self.properties();
+  json.transitions = self.transitionsAvailable();
+  self._pubsub.publish(topic, json);
+  if(cb) {
+    cb(json);
+  }
+};    
+
+Device.prototype.destroy = function() {
+  var self = this;
+  self.emit('destroy', self);
 };
 
 Device.prototype.enableStream = function(name) {
