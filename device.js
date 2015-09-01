@@ -342,3 +342,11 @@ Device.prototype.transitionsAvailable = function() {
 
   return ret;
 };
+
+Device.prototype.enableStream = function(name) {
+  this._streams[name].enabled = true; 
+};
+
+Device.prototype.disableStream = function(name) {
+  this._streams[name].enabled = false;
+};
