@@ -329,7 +329,6 @@ Device.prototype.transitionsAvailable = function() {
   return ret;
 };
 
-<<<<<<< HEAD
 Device.prototype._sendLogStreamEvent = function(transition, args, cb) {
   var self = this;
   var topic = self.type + '/' + self.id + '/logs';
