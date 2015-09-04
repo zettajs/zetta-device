@@ -68,6 +68,10 @@ Device.prototype._remoteFetch = function() {
   return this._properties();
 };
 
+Device.prototype._remoteDestroy = function(cb) {
+  cb(null, true);  
+};
+
 Device.prototype._generate = function(config) {
   var self = this;
   this.type = config._type;
@@ -108,6 +112,10 @@ Device.prototype._generate = function(config) {
   // Update remote update handler
   if (typeof config._remoteUpdate === 'function') {
     this._remoteUpdate = config._remoteUpdate.bind(this);
+  }
+
+  if (typeof config._remoteDestroy === 'function') {
+    this._remoteDestroy = config._remoteDestroy.bind(this);
   }
 };
 
@@ -252,6 +260,15 @@ Device.prototype._handleRemoteUpdate = function(properties, cb) {
   });
 };
 
+Device.prototype._handleRemoteDestroy = function(cb) {
+  this._remoteDestroy(function(err, destroyFlag) {
+    if(err) {
+      return cb(err);  
+    }  
+
+    cb(null, destroyFlag);
+  });  
+};
 
 Device.prototype.save = function(cb) {
   this._registry.save(this, cb);
@@ -344,9 +361,12 @@ Device.prototype._sendLogStreamEvent = function(transition, args, cb) {
   }
 };    
 
-Device.prototype.destroy = function() {
+Device.prototype.destroy = function(cb) {
   var self = this;
-  self.emit('destroy', self);
+  if(!cb) {
+    cb = function() {};  
+  }
+  self.emit('destroy', self, cb);
 };
 
 Device.prototype.enableStream = function(name) {
