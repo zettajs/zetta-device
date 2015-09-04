@@ -115,7 +115,7 @@ Device.prototype._generate = function(config) {
   }
 
   if (typeof config._remoteDestroy === 'function') {
-    this._remoteDelete = config._remoteDestroy.bind(this);
+    this._remoteDestroy = config._remoteDestroy.bind(this);
   }
 };
 
