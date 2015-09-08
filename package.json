@@ -1,6 +1,6 @@
 {
   "name": "zetta-device",
-  "version": "0.16.0",
+  "version": "0.17.0",
   "description": "Device class for Zetta.",
   "main": "device.js",
   "dependencies": {

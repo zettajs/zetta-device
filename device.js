@@ -177,6 +177,11 @@ Device.prototype.call = function(/* type, ...args */) {
     next.apply(next, arguments);
   };
   var handlerArgs = rest.concat([cb]);
+  
+  if(this.state == 'zetta-device-destroy') {
+    return next(new Error('Machine destroyed. Cannot use transition ' + type)); 
+  } 
+
   if (this._transitions[type]) {
     if(this._transitions[type].handler === undefined){
       return next(new Error('Machine does not implement transition '+type));
