@@ -95,13 +95,9 @@ Device.prototype._generate = function(config) {
   
   this._monitors = [];
   Object.keys(config.monitors).forEach(function(name) {
-    self._initMonitor(name);
-    self._monitors.push(name);
-    
     var m = config.monitors[name];
-    if(!m.enabled) {
-      self.disableStream(name);
-    }
+    self._initMonitor(name, m.options);
+    self._monitors.push(name);
   });
   
   Object.keys(config.streams).forEach(function(name) {
@@ -284,7 +280,11 @@ Device.prototype.save = function(cb) {
   this._registry.save(this, cb);
 };
 
-Device.prototype._initMonitor = function(queueName) {
+Device.prototype._initMonitor = function(queueName, options) {
+  if(!options) {
+    options = {};
+  }
+
   var stream = this._createStream(queueName, ObjectStream);
   var self = this;
   var value = this[queueName]; // initialize value
@@ -297,6 +297,11 @@ Device.prototype._initMonitor = function(queueName) {
       stream.write(newValue);
     }
   });
+
+  if(options.disable) {
+    this.disableStream(queueName);
+  }
+
   return this;
 };
 
