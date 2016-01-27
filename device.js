@@ -312,6 +312,11 @@ Device.prototype._initStream = function(queueName, handler, options) {
   var Type = (options.binary) ? BinaryStream : ObjectStream;
   var stream = this._createStream(queueName, Type);
   handler.call(this, stream);
+
+  if(options.disable) {
+    this.disableStream(queueName);
+  }
+  
   return this;
 };
 
