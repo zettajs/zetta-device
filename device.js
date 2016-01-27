@@ -94,9 +94,14 @@ Device.prototype._generate = function(config) {
   }
   
   this._monitors = [];
-  config.monitors.forEach(function(name) {
+  Object.keys(config.monitors).forEach(function(name) {
     self._initMonitor(name);
     self._monitors.push(name);
+    
+    var m = config.monitors[name];
+    if(!m.enabled) {
+      self.disableStream(name);
+    }
   });
   
   Object.keys(config.streams).forEach(function(name) {
