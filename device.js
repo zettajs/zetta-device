@@ -94,9 +94,9 @@ Device.prototype._generate = function(config) {
   }
   
   this._monitors = [];
-  Object.keys(config.monitors).forEach(function(name) {
-    var m = config.monitors[name];
-    self._initMonitor(name, m.options);
+  var monitorOptions = config.monitorsOptions || {};
+  config.monitors.forEach(function(name) {
+    self._initMonitor(name, monitorOptions[name]);
     self._monitors.push(name);
   });
   
