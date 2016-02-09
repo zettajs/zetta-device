@@ -94,8 +94,9 @@ Device.prototype._generate = function(config) {
   }
   
   this._monitors = [];
+  var monitorOptions = config.monitorsOptions || {};
   config.monitors.forEach(function(name) {
-    self._initMonitor(name);
+    self._initMonitor(name, monitorOptions[name]);
     self._monitors.push(name);
   });
   
@@ -279,7 +280,11 @@ Device.prototype.save = function(cb) {
   this._registry.save(this, cb);
 };
 
-Device.prototype._initMonitor = function(queueName) {
+Device.prototype._initMonitor = function(queueName, options) {
+  if(!options) {
+    options = {};
+  }
+
   var stream = this._createStream(queueName, ObjectStream);
   var self = this;
   var value = this[queueName]; // initialize value
@@ -292,6 +297,11 @@ Device.prototype._initMonitor = function(queueName) {
       stream.write(newValue);
     }
   });
+
+  if(options.disable) {
+    this.disableStream(queueName);
+  }
+
   return this;
 };
 
@@ -301,6 +311,11 @@ Device.prototype._initStream = function(queueName, handler, options) {
   }
   var Type = (options.binary) ? BinaryStream : ObjectStream;
   var stream = this._createStream(queueName, Type);
+
+  if(options.disable) {
+    this.disableStream(queueName);
+  }
+  
   handler.call(this, stream);
   return this;
 };
