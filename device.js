@@ -358,7 +358,7 @@ Device.prototype.transitionsAvailable = function() {
   }
 
   Object.keys(this._transitions).forEach(function(name) {
-    if (allowed && allowed.indexOf(name) > -1) {
+    if (allowed && allowed.indexOf(name) > -1 && name[0] !== '_') {
       ret[name] = self._transitions[name];
     }
   });
