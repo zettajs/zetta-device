@@ -4,6 +4,7 @@ var streams = require('zetta-streams');
 var ObjectStream = streams.ObjectStream;
 var BinaryStream = streams.BinaryStream; 
 var ConsumerStream = streams.ConsumerStream;
+var DeviceConfig = require('./device_config');
 
 var Device = module.exports = function Device() {
   this.id = uuid.v4();
@@ -25,7 +26,13 @@ var Device = module.exports = function Device() {
   // TODO: Namespace this as something weird so there's no accidental override.
   this.call = this.call.bind(this);
   this.emit = this._emitter.emit.bind(this._emitter);
+
+
+  // Allow machine.DeviceConfig
+  this.DeviceConfig = Device.DeviceConfig;
 };
+
+Device.DeviceConfig = DeviceConfig;
 
 var ReservedKeys = ['id', 'streams', '_streams', 'type', 'state', '_state', '_allowed', '_transitions', '_monitors'];
 
