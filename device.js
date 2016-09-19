@@ -2,9 +2,10 @@ var EventEmitter = require('events').EventEmitter;
 var uuid = require('node-uuid');
 var streams = require('zetta-streams');
 var ObjectStream = streams.ObjectStream;
-var BinaryStream = streams.BinaryStream; 
+var BinaryStream = streams.BinaryStream;
 var ConsumerStream = streams.ConsumerStream;
 var DeviceConfig = require('./device_config');
+var util = require('util');
 
 var Device = module.exports = function Device() {
   this.id = uuid.v4();
@@ -33,6 +34,14 @@ var Device = module.exports = function Device() {
 };
 
 Device.DeviceConfig = DeviceConfig;
+
+Device.ActionError = function(statusCode, properties) {
+  Error.captureStackTrace(this, this.constructor);
+  this.name = this.constructor.name;
+  this.statusCode = statusCode;
+  this.properties = properties;
+};
+util.inherits(Device.ActionError, Error);
 
 var ReservedKeys = ['id', 'streams', '_streams', 'type', 'state', '_state', '_allowed', '_transitions', '_monitors'];
 
@@ -76,7 +85,7 @@ Device.prototype._remoteFetch = function() {
 };
 
 Device.prototype._remoteDestroy = function(cb) {
-  cb(null, true);  
+  cb(null, true);
 };
 
 Device.prototype._generate = function(config) {
@@ -99,14 +108,14 @@ Device.prototype._generate = function(config) {
       }
     });
   }
-  
+
   this._monitors = [];
   var monitorOptions = config.monitorsOptions || {};
   config.monitors.forEach(function(name) {
     self._initMonitor(name, monitorOptions[name]);
     self._monitors.push(name);
   });
-  
+
   Object.keys(config.streams).forEach(function(name) {
     var s = config.streams[name];
     self._initStream(name, s.handler, s.options);
@@ -133,7 +142,7 @@ Device.prototype.available = function(transition) {
   if (!allowed) {
     return false;
   }
-  
+
   if(allowed.indexOf(transition) > -1) {
     return true;
   } else {
@@ -160,7 +169,7 @@ Device.prototype.call = function(/* type, ...args */) {
   } else {
     rest = args.slice(1, args.length - 1);
   }
-  
+
   var cb = function callback(err) {
     if (err) {
       next(err);
@@ -185,10 +194,10 @@ Device.prototype.call = function(/* type, ...args */) {
     next.apply(next, arguments);
   };
   var handlerArgs = rest.concat([cb]);
-  
+
   if(this.state == 'zetta-device-destroy') {
-    return next(new Error('Machine destroyed. Cannot use transition ' + type)); 
-  } 
+    return next(new Error('Machine destroyed. Cannot use transition ' + type));
+  }
 
   if (this._transitions[type]) {
     if(this._transitions[type].handler === undefined){
@@ -225,7 +234,7 @@ Device.prototype._properties = function() {
   return properties;
 };
 
-// External method to return properties using default remote fetch or 
+// External method to return properties using default remote fetch or
 // user supplied remote fetch call
 Device.prototype.properties = function() {
   var properties = this._remoteFetch();
@@ -246,7 +255,7 @@ Device.prototype.properties = function() {
   if (this.state !== undefined) {
     properties.state = this.state;
   }
-  
+
   return properties;
 };
 
@@ -276,11 +285,11 @@ Device.prototype._handleRemoteUpdate = function(properties, cb) {
 Device.prototype._handleRemoteDestroy = function(cb) {
   this._remoteDestroy(function(err, destroyFlag) {
     if(err) {
-      return cb(err);  
-    }  
+      return cb(err);
+    }
 
     cb(null, destroyFlag);
-  });  
+  });
 };
 
 Device.prototype.save = function(cb) {
@@ -322,7 +331,7 @@ Device.prototype._initStream = function(queueName, handler, options) {
   if(options.disable) {
     this.disableStream(queueName);
   }
-  
+
   handler.call(this, stream);
   return this;
 };
@@ -359,7 +368,7 @@ Device.prototype.transitionsAvailable = function() {
   var self = this;
   var allowed = this._allowed[this.state];
   var ret = {};
-  
+
   if (!allowed) {
     return ret;
   }
@@ -386,18 +395,18 @@ Device.prototype._sendLogStreamEvent = function(transition, args, cb) {
   if(cb) {
     cb(json);
   }
-};    
+};
 
 Device.prototype.destroy = function(cb) {
   var self = this;
   if(!cb) {
-    cb = function() {};  
+    cb = function() {};
   }
   self.emit('destroy', self, cb);
 };
 
 Device.prototype.enableStream = function(name) {
-  this._streams[name].enabled = true; 
+  this._streams[name].enabled = true;
 };
 
 Device.prototype.disableStream = function(name) {
