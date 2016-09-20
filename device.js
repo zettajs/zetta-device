@@ -35,7 +35,7 @@ var Device = module.exports = function Device() {
 
 Device.DeviceConfig = DeviceConfig;
 
-Device.ActionError = function(statusCode, properties) {
+Device.ActionError = function ActionError(statusCode, properties) {
   Error.captureStackTrace(this, this.constructor);
   this.name = this.constructor.name;
   this.statusCode = statusCode;
