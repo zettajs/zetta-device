@@ -36,6 +36,22 @@ var Device = module.exports = function Device() {
 Device.DeviceConfig = DeviceConfig;
 
 Device.ActionError = function ActionError(statusCode, properties) {
+  if (statusCode === undefined) {
+    statusCode = 500;
+  }
+
+  if (typeof statusCode !== 'number') {
+    throw new TypeError('statusCode must be a number.');
+  }
+
+  if (properties === undefined) {
+    properties = {};
+  }
+
+  if (typeof properties !== 'object') {
+    throw new TypeError('Properties must be an object.');
+  }
+  
   Error.captureStackTrace(this, this.constructor);
   this.name = this.constructor.name;
   this.statusCode = statusCode;
