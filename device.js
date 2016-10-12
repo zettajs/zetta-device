@@ -196,16 +196,18 @@ Device.prototype.call = function(/* type, ...args */) {
     cbArgs.unshift(type);
     self._emitter.emit.apply(self._emitter, cbArgs);
 
-    var args = [];
-    if (self._transitions[type].fields) {
-      self._transitions[type].fields.forEach(function(field, idx) {
-        args.push({ name: field.name, value: rest[idx] });
+    if (type[0] !== '_') {
+      var args = [];
+      if (self._transitions[type].fields) {
+        self._transitions[type].fields.forEach(function(field, idx) {
+          args.push({ name: field.name, value: rest[idx] });
+        });
+      }
+
+      self._sendLogStreamEvent(type, args, function(json) {
+        self._log.emit('log', 'device', self.type + ' transition ' + type, json);
       });
     }
-
-    self._sendLogStreamEvent(type, args, function(json) {
-      self._log.emit('log', 'device', self.type + ' transition ' + type, json);
-    });
 
     next.apply(next, arguments);
   };
@@ -390,7 +392,7 @@ Device.prototype.transitionsAvailable = function() {
   }
 
   Object.keys(this._transitions).forEach(function(name) {
-    if (allowed && allowed.indexOf(name) > -1) {
+    if (allowed && allowed.indexOf(name) > -1 && name[0] !== '_') {
       ret[name] = self._transitions[name];
     }
   });
