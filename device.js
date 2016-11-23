@@ -1,5 +1,5 @@
 var EventEmitter = require('events').EventEmitter;
-var uuid = require('node-uuid');
+var uuid = require('uuid');
 var streams = require('zetta-streams');
 var ObjectStream = streams.ObjectStream;
 var BinaryStream = streams.BinaryStream;
