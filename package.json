@@ -4,7 +4,7 @@
   "description": "Device class for Zetta.",
   "main": "device.js",
   "dependencies": {
-    "node-uuid": "~1.4.1",
+    "uuid": "^3.0.0",
     "zetta-streams": "^0.3.0"
   },
   "devDependencies": {},
