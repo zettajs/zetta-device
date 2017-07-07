@@ -1,11 +1,11 @@
 {
   "name": "zetta-device",
-  "version": "0.22.0",
+  "version": "1.0.0",
   "description": "Device class for Zetta.",
   "main": "device.js",
   "dependencies": {
     "uuid": "^3.0.0",
-    "zetta-streams": "^0.3.0"
+    "zetta-streams": "^1.0.0"
   },
   "devDependencies": {},
   "scripts": {
